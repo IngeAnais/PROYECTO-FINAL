@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🎉 Matemática Súper Divertida 🎉</title>
+<style>
+body{
+    font-family:'Arial',sans-serif;
+    background:linear-gradient(135deg,#76b852,#8DC26F);
+    text-align:center;
+    padding-top:60px; /* espacio para barra fija */
+    color:#333;
+    background-image: url(https://www.educapeques.com/wp-content/uploads/2017/02/matem%C3%A1ticas.jpg.webp);
+    background-size: cover;
+    background-position: center;
+}
+.screen{display:none}
+.active{display:block}
+.card{
+    background:white;
+    padding:25px 30px;
+    margin:20px auto;
+    max-width:500px;
+    border-radius:20px;
+    box-shadow:0 12px 25px rgba(0,0,0,.25);
+}
+button{
+    padding:18px 36px;
+    border:none;
+    border-radius:18px;
+    font-size:20px;
+    font-weight:700;
+    cursor:pointer;
+    margin:12px;
+    background:#4facfe;
+    color:white;
+}
+button:hover{transform:scale(1.05);}
+.nivel-bajo{background:#2ecc71;}
+.nivel-medio{background:#f39c12;}
+.nivel-alto{background:#e74c3c;}
+input{
+    padding:14px; font-size:20px; width:100px;
+    border-radius:12px; border:2px solid #ccc; text-align:center;
+}
+.correct{color:#27ae60;font-weight:bold;}
+.incorrect{color:#e74c3c;font-weight:bold;}
+h1{font-size:40px;color:#8DC26F;}
+h2{font-size:28px;color:#8DC26F;}
+
+/* Barra fija de puntaje */
+#barraPuntaje {
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    font-size:22px;
+    padding:10px;
+    z-index:999;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<h1>📚 Matemática Súper Divertida 🎉</h1>
+
+<div id="tipos" class="screen active">
+    <h2> Selecciona tu aventura 🏹</h2>
+    <button onclick="seleccionarTipo('suma')">➕ Sumas</button>
+    <button onclick="seleccionarTipo('resta')">➖ Restas</button>
+    <button onclick="seleccionarTipo('multi')">✖ Multiplicación</button>
+    <button onclick="seleccionarTipo('division')">➗ División</button>
+    <button onclick="seleccionarTipo('secuencia')">🔢 Secuencias</button>
+    <button onclick="seleccionarTipo('analogia')">🧠 Analogías</button>
+</div>
+
+<div id="niveles" class="screen">
+    <h2>Escoge tu nivel de aventura 🏹</h2>
+    <button class="nivel-bajo" onclick="iniciarNivel('facil')">Fácil</button>
+    <button class="nivel-medio" onclick="iniciarNivel('medio')">Intermedio</button>
+    <button class="nivel-alto" onclick="iniciarNivel('dificil')">Avanzado</button>
+    <br><button onclick="backToTipos()">⬅ Regresar</button>
+</div>
+
+<div id="ejercicios" class="screen"></div>
+<div id="resultado" class="screen"></div>
+
+<script>
+let tipoActual="", nivelActual="", ejerciciosActuales=[], puntaje=0;
+
+// Analogías por nivel
+const analogiasFacil = [
+    ["Sol 🌞 es de día como luna 🌙 es de ___","noche"],
+    ["Perro 🐶 es cachorro como gato 🐱 es ___","gatito"],
+    ["Pájaro 🐦 vuela como pez 🐟 ___","nada"],
+    ["Vaca 🐄 da leche como gallina 🐔 da ___","huevo"],
+    ["Zapato 👟 va en pie como gorra 🧢 va en ___","cabeza"],
+    ["Manzana 🍎 es roja como plátano 🍌 es ___","amarillo"],
+    ["Día 🌞 es claro como noche 🌙 es ___","oscura"],
+    ["Agua 💧 es líquida como hielo ❄ es ___","sólido"],
+    ["Flor 🌸 crece en tierra como pez 🐠 en ___","agua"],
+    ["Gato 🐱 es animal como pájaro 🐦 es ___","ave"]
+];
+const analogiasMedio = [
+    ["Libro 📘 sirve para leer como lápiz ✏ sirve para ___","escribir"],
+    ["Pan 🍞 viene del trigo 🌾 como leche 🥛 viene de ___","vaca"],
+    ["Montaña 🏔️ es alta como valle 🏞️ es ___","bajo"],
+    ["Río 🏞️ lleva agua como carretera 🚗 lleva ___","autos"],
+    ["Sombrero 🎩 va en cabeza como guante 🧤 va en ___","mano"],
+    ["Sol 🌞 da luz como fuego 🔥 da ___","calor"],
+    ["Mapa 🗺️ muestra lugares como reloj ⏰ muestra ___","tiempo"],
+    ["Corazón ❤️ late como pulmón 🌬️ ___","respira"],
+    ["Llave 🔐 abre puerta 🚪 como contraseña 🧠 abre ___","cuenta"],
+    ["Ojo 👁️ ve colores como oído 👂 ___ sonidos","escucha"]
+];
+const analogiasDificil = [
+    ["Estrella ⭐ brilla en noche como sol 🌞 brilla en ___","día"],
+    ["Código 💻 sirve para programa como receta 🍲 sirve para ___","comida"],
+    ["Semilla 🌱 se convierte en planta como larva 🐛 en ___","mariposa"],
+    ["Órbita 🌍 rodea sol ☀️ como luna 🌙 rodea ___","tierra"],
+    ["Energía ⚡ se transforma como agua 💧 se ___","congela"],
+    ["Palabra 🗣️ construye frase como nota 🎵 construye ___","melodía"],
+    ["Historia 📖 tiene inicio como cuento 🧚‍♂️ tiene ___","final"],
+    ["Planeta 🌎 gira como rueda 🚗 ___","rota"],
+    ["Circuito 🔌 cierra corriente como sistema 💻 cierra ___","programa"],
+    ["Átomo ⚛️ es parte de elemento como célula 🧬 es parte de ___","organismo"]
+];
+
+// Mezcla un arreglo
+function shuffle(arr){
+    let c=[...arr];
+    for(let i=c.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [c[i],c[j]]=[c[j],c[i]];
+    }
+    return c;
+}
+
+// Genera ejercicios aleatorios
+function generarEjercicios(){
+    ejerciciosActuales = [];
+
+    if(tipoActual === 'analogia'){
+        let lista = [];
+        if(nivelActual === 'facil') lista = analogiasFacil;
+        if(nivelActual === 'medio') lista = analogiasMedio;
+        if(nivelActual === 'dificil') lista = analogiasDificil;
+        ejerciciosActuales = shuffle(lista).slice(0,10);
+        return;
+    }
+
+    for(let i=0;i<10;i++){
+        let a,b,expr,res;
+        if(tipoActual==='suma'){
+            let range = nivelActual==='facil'?[1,10]:nivelActual==='medio'?[10,25]:[20,50];
+            a=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            b=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            expr=`${a} 🍎 + ${b} 🍎`; res=a+b;
+        }
+        if(tipoActual==='resta'){
+            let range = nivelActual==='facil'?[1,10]:nivelActual==='medio'?[10,25]:[20,50];
+            a=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            b=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            if(b>a)[a,b]=[b,a];
+            expr=`${a} 🍬 - ${b} 🍬`; res=a-b;
+        }
+        if(tipoActual==='multi'){
+            let range = nivelActual==='facil'?[1,5]:nivelActual==='medio'?[2,8]:[5,12];
+            a=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            b=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            expr=`${a} 🍪 × ${b} 🍪`; res=a*b;
+        }
+        if(tipoActual==='division'){
+            let range = nivelActual==='facil'?[1,5]:nivelActual==='medio'?[2,10]:[5,15];
+            b=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            res=Math.floor(Math.random()*(range[1]-range[0]+1))+range[0];
+            a=b*res;
+            expr=`${a} 🍫 ÷ ${b} 🍫`;
+        }
+        if(tipoActual==='secuencia'){
+            let start=Math.floor(Math.random()*10)+1;
+            let step=(nivelActual==='facil'?1:(nivelActual==='medio'?2:(Math.floor(Math.random()*3)+2)));
+            expr=`${start} 🔢 - ${start+step} 🔢 - ${start+2*step} 🔢 - ___`; res=start+3*step;
+        }
+        ejerciciosActuales.push([expr,res]);
+    }
+}
+
+function seleccionarTipo(t){ tipoActual=t; show('niveles'); }
+
+function iniciarNivel(n){
+    nivelActual=n;
+    puntaje=0;
+    generarEjercicios();
+    mostrarEjercicios();
+}
+
+// Mostrar ejercicios con PUNTAJE FIJO ARRIBA
+function mostrarEjercicios(){
+    let html = `<div id="barraPuntaje">Puntaje: ${puntaje} / 10</div>`;
+    ejerciciosActuales.forEach((e,i)=>{
+        html+=`
+        <div class="card">
+            <h3>${e[0]}</h3>
+            <input id="r${i}" oninput="actualizarPuntaje()">
+            <p id="m${i}"></p>
+        </div>`;
+    });
+    html+=`<button onclick="finalizar()">Finalizar</button><button onclick="show('niveles')">⬅ Regresar</button>`;
+    document.getElementById('ejercicios').innerHTML=html;
+    show('ejercicios');
+}
+
+// Actualizar puntaje en tiempo real
+function actualizarPuntaje(){
+    puntaje=0;
+    ejerciciosActuales.forEach((e,i)=>{
+        let val=document.getElementById('r'+i).value.trim().toLowerCase();
+        let ok=e[1].toString().toLowerCase();
+        let p=document.getElementById('m'+i);
+        if(val===ok){
+            puntaje++;
+            p.innerHTML="✔ Correcto"; p.className="correct";
+        } else if(val.length>0){
+            p.innerHTML="❌ Incorrecto"; p.className="incorrect";
+        } else p.innerHTML="";
+    });
+    document.getElementById('barraPuntaje').innerText = `Puntaje: ${puntaje} / 10`;
+}
+
+function finalizar(){
+    let medalla="🥉";
+    if(puntaje>=8) medalla="🥇";
+    else if(puntaje>=5) medalla="🥈";
+    document.getElementById('resultado').innerHTML =
+    `<div class="card">
+        <h2>Puntaje final: ${puntaje} / 10</h2>
+        <h1>${medalla}</h1>
+        <button onclick="show('niveles')">Volver a niveles</button>
+    </div>`;
+    show('resultado');
+}
+
+function show(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+function backToTipos(){ show('tipos'); }
+</script>
+</body>
+</html>
